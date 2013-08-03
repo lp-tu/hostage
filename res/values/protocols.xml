@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="protocols">
+        <item>ECHO</item>
+        <item>FTP</item>
+        <item>HTTP</item>
+        <item>HTTPS</item>
+        <item>SMB</item>
+        <item>SSH</item>
+    </string-array>
+
+</resources>

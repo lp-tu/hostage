@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Hostage</string>
+    <string name="action_settings">Settings</string>
+    <string name="capital_on">ON</string>
+    <string name="capital_off">OFF</string>
+    <string name="status">Status</string>
+    <string name="paranoid">Paranoid Mode</string>
+    <string name="details">Connection info</string>
+    <string name="ssid">SSID:</string>
+    <string name="ip">IP:</string>
+    <string name="services">Services</string>
+    <string name="connections">Active connections:</string>
+
+</resources>
