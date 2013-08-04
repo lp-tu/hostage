@@ -3,10 +3,15 @@ package de.tudarmstadt.informatik.hostage;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.LocalBroadcastManager;
 import de.tudarmstadt.informatik.hostage.logging.FileLogger;
 import de.tudarmstadt.informatik.hostage.logging.Logger;
@@ -44,6 +49,7 @@ public class HoneyService extends Service {
 	public void onCreate() {
 		super.onCreate();
 		log = new FileLogger(getApplicationContext());
+		createNotification();
 		for (Protocol protocol : getProtocolArray()) {
 			listeners.add(new HoneyListener(this, protocol));
 		}
@@ -51,8 +57,29 @@ public class HoneyService extends Service {
 
 	@Override
 	public void onDestroy() {
+		cancelNotification();
 		log.close();
 		super.onDestroy();
+	}
+
+	private void createNotification() {
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(
+				this).setSmallIcon(R.drawable.ic_launcher)
+				.setContentTitle(getString(R.string.app_name))
+				.setContentText("Honeypot up and running!");
+		TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+		stackBuilder.addParentStack(MainActivity.class);
+		stackBuilder.addNextIntent(new Intent(this, MainActivity.class));
+		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,
+				PendingIntent.FLAG_UPDATE_CURRENT);
+		builder.setContentIntent(resultPendingIntent);
+		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		mNotificationManager.notify(1, builder.build());
+	}
+
+	private void cancelNotification() {
+		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		mNotificationManager.cancel(1);
 	}
 
 	private ArrayList<Protocol> getProtocolArray() {

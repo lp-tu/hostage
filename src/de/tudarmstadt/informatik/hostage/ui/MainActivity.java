@@ -57,12 +57,12 @@ public class MainActivity extends Activity {
 	private ListView listView;
 	private ListViewAdapter adapter;
 
+	private boolean running;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
-		startService(getServiceIntent());
 
 		initViewAnimator();
 		initListView();
@@ -78,13 +78,17 @@ public class MainActivity extends Activity {
 	protected void onStart() {
 		super.onStart();
 		registerReceiver();
-		bindService(getServiceIntent(), mConnection, BIND_AUTO_CREATE);
+		if (isServiceRunning()) {
+			bindService(getServiceIntent(), mConnection, BIND_ABOVE_CLIENT);
+		}
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
-		unbindService(mConnection);
+		if (isServiceRunning()) {
+			unbindService(mConnection);
+		}
 		unregisterReceiver();
 	}
 
@@ -95,16 +99,22 @@ public class MainActivity extends Activity {
 
 	public void buttonOnOffClick(View view) {
 		if (((ToggleButton) view).isChecked()) {
-			if (isParanoid()) {
-				mService.startListeners();
-			} else {
-				mService.startListener("SMB");
-			}
-			findViewById(R.id.checkBoxParanoid).setEnabled(false);
+			startAndBind();
 		} else {
-			mService.stopListeners();
-			findViewById(R.id.checkBoxParanoid).setEnabled(true);
+			stopAndUnbind();
+			running = false;
 		}
+	}
+
+	private void startAndBind() {
+		startService(getServiceIntent());
+		bindService(getServiceIntent(), mConnection, BIND_ABOVE_CLIENT);
+	}
+
+	private void stopAndUnbind() {
+		mService.stopListeners();
+		unbindService(mConnection);
+		stopService(getServiceIntent());
 	}
 
 	private boolean isParanoid() {
@@ -152,7 +162,9 @@ public class MainActivity extends Activity {
 					int position, long id) {
 				String protocolName = ((HashMap<String, String>) adapter
 						.getItem(position)).get("protocol");
-				mService.toggleListener(protocolName);
+				if (isServiceRunning()) {
+					mService.toggleListener(protocolName);
+				}
 			}
 
 		});
@@ -210,6 +222,15 @@ public class MainActivity extends Activity {
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			mService = ((LocalBinder) service).getService();
+			if (!running) {
+				if (isParanoid()) {
+					mService.startListeners();
+				} else {
+					mService.startListener("SMB");
+				}
+			}
+			running = true;
+			updateUI();
 		}
 
 		@Override
@@ -234,6 +255,7 @@ public class MainActivity extends Activity {
 		public void onReceive(Context context, Intent intent) {
 			updateUI();
 		}
+
 	};
 
 	private void updateUI() {
