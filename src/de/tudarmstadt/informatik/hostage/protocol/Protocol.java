@@ -1,5 +1,7 @@
 package de.tudarmstadt.informatik.hostage.protocol;
 
+import java.util.List;
+
 public interface Protocol {
 
 	public static enum TALK_FIRST {
@@ -10,7 +12,7 @@ public interface Protocol {
 
 	TALK_FIRST whoTalksFirst();
 
-	String processMessage(String message);
+	List<byte[]> processMessage(byte[] message);
 
 	boolean isClosed();
 

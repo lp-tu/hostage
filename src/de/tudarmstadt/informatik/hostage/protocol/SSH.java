@@ -1,6 +1,7 @@
 package de.tudarmstadt.informatik.hostage.protocol;
 
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class SSH implements Protocol {
 
@@ -17,25 +18,13 @@ public final class SSH implements Protocol {
 
 	@Override
 	public TALK_FIRST whoTalksFirst() {
-		return TALK_FIRST.SERVER;
+		return TALK_FIRST.CLIENT;
 	}
 
 	@Override
-	public String processMessage(String message) {
-		switch (state) {
-		case NONE:
-			state = STATE.OPEN;
-			return "Connection established.";
-		case OPEN:
-			if (Pattern.matches("^QUIT\\s?", message)) {
-				state = STATE.CLOSED;
-				return null;
-			} else {
-				return message;
-			}
-		default:
-			return "Connection closed.";
-		}
+	public List<byte[]> processMessage(byte[] message) {
+		List<byte[]> response = new ArrayList<byte[]>();
+		return response;
 	}
 
 	@Override
