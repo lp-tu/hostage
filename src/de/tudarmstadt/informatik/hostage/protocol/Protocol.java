@@ -14,6 +14,4 @@ public interface Protocol {
 
 	boolean isClosed();
 
-	boolean isSecure();
-
 }

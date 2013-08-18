@@ -44,11 +44,6 @@ public final class HTTP implements Protocol {
 	}
 
 	@Override
-	public boolean isSecure() {
-		return false;
-	}
-
-	@Override
 	public String toString() {
 		return "HTTP";
 	}

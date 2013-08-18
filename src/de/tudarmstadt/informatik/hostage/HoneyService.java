@@ -100,6 +100,8 @@ public class HoneyService extends Service {
 		return protocolArray;
 	}
 
+	// IPC
+
 	public void notifyUI() {
 		Intent intent = new Intent(MainActivity.BROADCAST);
 		LocalBroadcastManager.getInstance(this).sendBroadcast(intent);

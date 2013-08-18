@@ -81,7 +81,7 @@ public class HoneyHandler implements Runnable {
 		String outputLine;
 
 		if (protocol.whoTalksFirst() == TALK_FIRST.SERVER) {
-			outputLine = protocol.processMessage(null);
+			outputLine = "";// protocol.processMessage(null);
 			out.write(outputLine + "\n");
 			out.flush();
 			log.write(createRecord(TYPE.SEND, outputLine));
@@ -89,7 +89,7 @@ public class HoneyHandler implements Runnable {
 
 		while (!thread.isInterrupted() && (inputLine = in.readLine()) != null) {
 			log.write(createRecord(TYPE.RECEIVE, inputLine));
-			outputLine = protocol.processMessage(inputLine);
+			outputLine = "";// protocol.processMessage(inputLine);
 			if (outputLine != null) {
 				out.write(outputLine + "\n");
 				out.flush();

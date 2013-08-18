@@ -44,11 +44,6 @@ public final class SSH implements Protocol {
 	}
 
 	@Override
-	public boolean isSecure() {
-		return true;
-	}
-
-	@Override
 	public String toString() {
 		return "SSH";
 	}

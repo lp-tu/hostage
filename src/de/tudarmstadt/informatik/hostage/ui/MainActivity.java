@@ -1,6 +1,5 @@
 package de.tudarmstadt.informatik.hostage.ui;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -13,8 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.net.LocalSocket;
-import android.net.LocalSocketAddress;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
@@ -82,7 +79,7 @@ public class MainActivity extends Activity {
 		super.onStart();
 		registerReceiver();
 		if (isServiceRunning()) {
-			bindService(getServiceIntent(), mConnection, BIND_ABOVE_CLIENT);
+			bindService(getServiceIntent(), mConnection, BIND_AUTO_CREATE);
 		}
 	}
 
@@ -111,7 +108,7 @@ public class MainActivity extends Activity {
 
 	private void startAndBind() {
 		startService(getServiceIntent());
-		bindService(getServiceIntent(), mConnection, BIND_ABOVE_CLIENT);
+		bindService(getServiceIntent(), mConnection, BIND_AUTO_CREATE);
 	}
 
 	private void stopAndUnbind() {
@@ -163,11 +160,12 @@ public class MainActivity extends Activity {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-				String protocolName = ((HashMap<String, String>) adapter
+				String protocolName = (String) ((HashMap<?, ?>) adapter
 						.getItem(position)).get("protocol");
-				if (isServiceRunning()) {
-					mService.toggleListener(protocolName);
+				if (!isServiceRunning()) {
+					startAndBind();
 				}
+				mService.toggleListener(protocolName);
 			}
 
 		});
@@ -321,8 +319,8 @@ public class MainActivity extends Activity {
 
 	private void updateProtocolLight(int light, String protocolName) {
 		for (int i = 0; i < adapter.getCount(); ++i) {
-			HashMap<String, String> d = ((HashMap<String, String>) adapter
-					.getItem(i));
+			HashMap<String, String> d = (HashMap<String, String>) adapter
+					.getItem(i);
 			if (d.get("protocol").equals(protocolName)) {
 				switch (light) {
 				case LIGHT_GREY:

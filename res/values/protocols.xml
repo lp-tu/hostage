@@ -2,12 +2,11 @@
 <resources>
 
     <string-array name="protocols">
-        <item>ECHO</item>
         <item>FTP</item>
         <item>HTTP</item>
-        <item>HTTPS</item>
         <item>SMB</item>
         <item>SSH</item>
+        <item>TELNET</item>
     </string-array>
 
 </resources>
