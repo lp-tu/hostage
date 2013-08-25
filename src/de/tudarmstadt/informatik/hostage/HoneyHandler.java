@@ -21,13 +21,11 @@ public class HoneyHandler implements Runnable {
 	private Socket client;
 	private Thread thread;
 
-	private HoneyService service;
 	private HoneyListener listener;
 	private Logger log;
 
 	public HoneyHandler(HoneyService service, HoneyListener listener,
 			Protocol protocol, Socket client) {
-		this.service = service;
 		this.listener = listener;
 		this.log = service.getLog();
 		this.protocol = protocol;

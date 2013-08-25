@@ -4,6 +4,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import de.tudarmstadt.informatik.hostage.net.MyServerSocketFactory;
 import de.tudarmstadt.informatik.hostage.protocol.Protocol;
 
 public class HoneyListener implements Runnable {
@@ -43,7 +44,8 @@ public class HoneyListener implements Runnable {
 
 	public void start() {
 		try {
-			server = new ServerSocket(protocol.getPort());
+			server = new MyServerSocketFactory().createServerSocket(protocol
+					.getPort());
 			(this.thread = new Thread(this)).start();
 			running = true;
 			service.notifyUI();

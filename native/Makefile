@@ -1,7 +1,7 @@
 CC = arm-linux-androideabi-gcc
 CFLAGS = -Wall -g
 LDFLAGS = -llog
-SRC = porthack.c
+SRC = p.c
 OBJ = $(SRC:.c=.o)
 EXE = p
  
@@ -18,6 +18,3 @@ clean:
 
 install:
 	adb push p /data/local
-
-run:
-	adb shell /data/local/p 21
