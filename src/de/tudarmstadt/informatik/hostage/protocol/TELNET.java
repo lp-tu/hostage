@@ -3,7 +3,9 @@ package de.tudarmstadt.informatik.hostage.protocol;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class TELNET implements Protocol {
+import de.tudarmstadt.informatik.hostage.wrapper.ByteArray;
+
+public final class TELNET implements Protocol<ByteArray> {
 
 	private static enum STATE {
 		NONE, OPEN, CLOSED, LOGIN, AUTHENTICATE, LOGGED_IN
@@ -16,7 +18,7 @@ public final class TELNET implements Protocol {
 
 	@Override
 	public int getPort() {
-		return 8023;
+		return 23;
 	}
 
 	@Override
@@ -25,45 +27,47 @@ public final class TELNET implements Protocol {
 	}
 
 	@Override
-	public List<byte[]> processMessage(byte[] message) {
-		List<byte[]> response = new ArrayList<byte[]>();
+	public List<ByteArray> processMessage(ByteArray message) {
+		List<ByteArray> response = new ArrayList<ByteArray>();
 		switch (state) {
 		case NONE:
-			response.add(cmdRequests);
-			response.add(getCmdResponses(message));
+			response.add(new ByteArray(cmdRequests));
+			response.add(new ByteArray(getCmdResponses(message.get())));
 			state = STATE.OPEN;
 			break;
 		case OPEN:
-			response.add("Debian GNU/Linux 7.0\r\n".getBytes());
-			response.add("raspberrypi login: ".getBytes());
+			response.add(new ByteArray("Debian GNU/Linux 7.0\r\n".getBytes()));
+			response.add(new ByteArray("raspberrypi login: ".getBytes()));
 			state = STATE.LOGIN;
 			break;
 		case LOGIN:
-			usr = java.util.Arrays.copyOfRange(message, 0, message.length - 2);
-			response.add("Password: ".getBytes());
+			usr = java.util.Arrays.copyOfRange(message.get(), 0,
+					message.size() - 2);
+			response.add(new ByteArray("Password: ".getBytes()));
 			state = STATE.AUTHENTICATE;
 			break;
 		case AUTHENTICATE:
-			response.add("Last Login: \r\nLinux raspberrypi 3.6.11+\r\n"
-					.getBytes());
-			response.add(concatenate(a, usr, b, usr, c));
+			response.add(new ByteArray(
+					"Last Login: \r\nLinux raspberrypi 3.6.11+\r\n".getBytes()));
+			response.add(new ByteArray(concatenate(a, usr, b, usr, c)));
 			state = STATE.LOGGED_IN;
 			break;
 		case LOGGED_IN:
-			cmd = java.util.Arrays.copyOfRange(message, 0, message.length - 2);
+			cmd = java.util.Arrays.copyOfRange(message.get(), 0,
+					message.size() - 2);
 			if (new String(cmd).contains("exit")) {
-				response.add("logout\r\n".getBytes());
+				response.add(new ByteArray("logout\r\n".getBytes()));
 				state = STATE.CLOSED;
 			} else {
 				String bash = "-bash: " + new String(cmd)
 						+ ": command not found";
-				response.add(bash.getBytes());
-				response.add("\r\n".getBytes());
-				response.add(concatenate(a, usr, b, usr, c));
+				response.add(new ByteArray(bash.getBytes()));
+				response.add(new ByteArray("\r\n".getBytes()));
+				response.add(new ByteArray(concatenate(a, usr, b, usr, c)));
 			}
 			break;
 		default:
-			response.add("\r\nlogout\r\n".getBytes());
+			response.add(new ByteArray("\r\nlogout\r\n".getBytes()));
 			state = STATE.CLOSED;
 			break;
 		}
@@ -73,6 +77,16 @@ public final class TELNET implements Protocol {
 	@Override
 	public boolean isClosed() {
 		return (state == STATE.CLOSED);
+	}
+
+	@Override
+	public boolean isSecure() {
+		return false;
+	}
+
+	@Override
+	public Class<ByteArray> getType() {
+		return ByteArray.class;
 	}
 
 	@Override

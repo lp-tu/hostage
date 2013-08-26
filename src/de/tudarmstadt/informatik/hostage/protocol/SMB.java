@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.TimeZone;
 
-public final class SMB implements Protocol {
+import de.tudarmstadt.informatik.hostage.wrapper.ByteArray;
+
+public final class SMB implements Protocol<ByteArray> {
 
 	private static enum STATE {
 		NONE, CONNECTED, AUTHENTICATED, LISTING, DISCONNECTED, CLOSED
@@ -17,7 +19,7 @@ public final class SMB implements Protocol {
 
 	@Override
 	public int getPort() {
-		return 8445;
+		return 445;
 	}
 
 	@Override
@@ -26,72 +28,73 @@ public final class SMB implements Protocol {
 	}
 
 	@Override
-	public List<byte[]> processMessage(byte[] message) {
-		SmbPacket packet = new SmbPacket(message);
+	public List<ByteArray> processMessage(ByteArray message) {
+		byte[] primitiveByteArray = message.get();
+		SmbPacket packet = new SmbPacket(primitiveByteArray);
 		byte smbCommand = packet.getSmbCommand();
-		List<byte[]> response = new ArrayList<byte[]>();
+		List<ByteArray> response = new ArrayList<ByteArray>();
 		switch (state) {
 		case NONE:
 			if (smbCommand == 0x72) {
 				state = STATE.CONNECTED;
-				response.add(packet.getNego());
+				response.add(new ByteArray(packet.getNego()));
 			} else {
 				state = STATE.DISCONNECTED;
-				response.add(packet.getTreeDisc());
+				response.add(new ByteArray(packet.getTreeDisc()));
 			}
 			break;
 		case CONNECTED:
 			if (smbCommand == 0x73) {
-				response.add(packet.getSessSetup());
+				response.add(new ByteArray(packet.getSessSetup()));
 			} else if (smbCommand == 0x75) {
 				state = STATE.AUTHENTICATED;
-				response.add(packet.getTreeCon());
+				response.add(new ByteArray(packet.getTreeCon()));
 			} else {
 				state = STATE.DISCONNECTED;
-				response.add(packet.getTreeDisc());
+				response.add(new ByteArray(packet.getTreeDisc()));
 			}
 			break;
 		case AUTHENTICATED:
 			if (smbCommand == (byte) 0xa2) {
 				state = STATE.LISTING;
-				response.add(packet.getNTCreate());
+				response.add(new ByteArray(packet.getNTCreate()));
 			} else if (smbCommand == 0x2b) {
-				response.add(packet.getEcho());
+				response.add(new ByteArray(packet.getEcho()));
 			} else if (smbCommand == 0x32) {
-				response.add(packet.getTrans2());
+				response.add(new ByteArray(packet.getTrans2()));
 			} else if (smbCommand == 0x04) {
-				response.add(packet.getClose());
+				response.add(new ByteArray(packet.getClose()));
 			} else if (smbCommand == 0x71) {
 				state = STATE.CLOSED;
-				response.add(packet.getTreeDisc());
+				response.add(new ByteArray(packet.getTreeDisc()));
 			} else {
 				state = STATE.DISCONNECTED;
-				response.add(packet.getTreeDisc());
+				response.add(new ByteArray(packet.getTreeDisc()));
 			}
 			break;
 		case LISTING:
 			if (smbCommand == 0x25) {
-				response.add(packet.getTrans());
+				response.add(new ByteArray(packet.getTrans()));
 			} else if (smbCommand == 0x04) {
-				response.add(packet.getClose());
+				response.add(new ByteArray(packet.getClose()));
 			} else if (smbCommand == 0x71) {
 				state = STATE.CLOSED;
-				response.add(packet.getTreeDisc());
+				response.add(new ByteArray(packet.getTreeDisc()));
 			} else if (smbCommand == 0x72) {
 				state = STATE.CONNECTED;
-				response.add(packet.getNego());
+				response.add(new ByteArray(packet.getNego()));
 			} else {
 				state = STATE.DISCONNECTED;
-				response.add(packet.getTreeDisc());
+				response.add(new ByteArray(packet.getTreeDisc()));
 			}
 			break;
 		case DISCONNECTED:
 			state = STATE.CLOSED;
-			response.add(packet.getTreeDisc());
+			response.add(new ByteArray(packet.getTreeDisc()));
 			break;
 		default:
 			state = STATE.CLOSED;
-			response.add(packet.getTreeDisc());
+			response.add(new ByteArray(packet.getTreeDisc()));
 		}
 		return response;
 	}
@@ -99,6 +102,16 @@ public final class SMB implements Protocol {
 	@Override
 	public boolean isClosed() {
 		return (state == STATE.CLOSED);
+	}
+
+	@Override
+	public boolean isSecure() {
+		return false;
+	}
+
+	@Override
+	public Class<ByteArray> getType() {
+		return ByteArray.class;
 	}
 
 	@Override

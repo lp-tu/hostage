@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public final class HTTP implements Protocol {
+public final class HTTP implements Protocol<String> {
 
 	@Override
 	public int getPort() {
-		return 8080;
+		return 80;
 	}
 
 	@Override
@@ -17,23 +17,31 @@ public final class HTTP implements Protocol {
 	}
 
 	@Override
-	public List<byte[]> processMessage(byte[] message) {
-		String request = new String(message);
-		List<byte[]> response = new ArrayList<byte[]>();
-		String r = new String(request);
-		if (Pattern.matches("^HEAD\\s?", r)) {
-			response.add(buildHeader().getBytes());
-		} else if (Pattern.matches("^GET\\s?", r)) {
-			response.add((buildHeader() + buildPage()).getBytes());
+	public List<String> processMessage(String message) {
+		List<String> response = new ArrayList<String>();
+		if (Pattern.matches("^HEAD\\s?", message)) {
+			response.add(buildHeader());
+		} else if (Pattern.matches("^GET\\s?", message)) {
+			response.add((buildHeader() + buildPage()));
 		} else {
-			response.add("HTTP/1.1 501 Not Implemented".getBytes());
+			response.add("HTTP/1.1 501 Not Implemented");
 		}
 		return response;
 	}
 
 	@Override
 	public boolean isClosed() {
-		return true;
+		return false;
+	}
+
+	@Override
+	public boolean isSecure() {
+		return false;
+	}
+
+	@Override
+	public Class<String> getType() {
+		return String.class;
 	}
 
 	@Override
